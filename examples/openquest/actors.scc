@@ -1,0 +1,305 @@
+/* ScummC
+ * Copyright (C) 2006  Alban Bedel
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+#include <scummVars6.s>
+#include "common.sch"
+#include "actors.sch"
+#include "dialog.sch"
+#include "inventoryitems.sch"
+#include "officeroom.sch"
+#include "secretroom.sch"
+
+
+room Actors {
+
+    // the costumes for our actors
+    cost ensignZobCost = "zob.cost";
+    cost commanderZifCost = "zif.cost";
+    cost carolCost = "carol.cost";
+
+    cost bluecupCost = "bluecup.cost";
+    cost cubeCost = "cube.cost";
+
+    object commanderZifObj;
+    object ensignZobObj;
+    
+    
+    script setZifOnThePhone() {
+        setCurrentActor(commanderZif);
+        setActorStandFrame( 32 );
+        setActorInitFrame( 32 );
+        setActorTalkFrame( 36, 32 );
+        setActorStanding();
+        setCurrentActor(VAR_EGO);
+    }
+
+    
+    script setZifOffThePhone() {
+        setCurrentActor(commanderZif);
+        setActorStandFrame( 3 );
+        setActorInitFrame( 1 );
+        setActorTalkFrame( 4, 5 );
+        setActorStanding();
+        setCurrentActor(VAR_EGO);
+    }
+
+    
+    // set the actor costume, etc
+    script setupActors() {
+        dbgPrint("setupActors()");
+        
+        // initialize ensignZob
+        setCurrentActor(ensignZob);
+        initActor();
+        setActorCostume(ensignZobCost);
+        setActorTalkPos(-60,-70);
+        setActorName("Ensign Zob");
+        setActorWalkSpeed(2,1);
+        setActorTalkColor(ZOB_COLOR);
+        setActorWidth(20);
+        setActorAnimSpeed(4);
+        setObjectClass(ensignZob, [ 0x80 + Person ]);
+        actorObject[ensignZob] = ensignZobObj;
+
+
+        // set VAR_EGO so we can use the *Ego* functions
+        VAR_EGO = ensignZob;
+        
+        // initialize commanderZif
+        setCurrentActor(commanderZif);
+        initActor();
+        setActorCostume(commanderZifCost);
+        setActorTalkPos(-60,-80);
+        setActorName("Commander Zif");
+        setActorWalkSpeed(2,1);
+        setActorTalkColor(ZIF_COLOR);
+        setActorWidth(20);
+        setActorAnimSpeed(4);
+        setObjectClass(commanderZif, [ 0x80 + Person ]);
+        actorObject[commanderZif] = commanderZifObj;
+        
+        setCurrentActor(carol);
+        initActor();
+        setActorCostume(carolCost);
+        setActorName("indigenous lifeform");
+        setActorWidth(20);
+        setActorIgnoreBoxes();
+        setActorAnimSpeed( 7 );
+        setActorTalkColor(CAROL_COLOR);
+        setObjectClass(carol, [ 0x80 + Person ]);
+        actorObject[carol] = OfficeRoom::carolObj;
+
+        setCurrentActor(bluecupActor);
+        initActor();
+        setActorCostume(bluecupCost);
+        setActorName("blue cup");
+        setActorAnimSpeed(2);
+        actorObject[bluecupActor] = SecretRoom::blueCup;
+        putActorAt(bluecupActor,159,97,SecretRoom);
+        setActorElevation( 55 );
+        setActorWidth(0);
+
+        setCurrentActor(cubeActor);
+        initActor();
+        setActorCostume(cubeCost);
+        // TODO: make the cube irresponsive to mouseover
+        setActorName("blue cup");
+        setActorAnimSpeed(2);
+        setObjectClass(cubeActor, [ 0x80 + ClassUntouchable ]);
+        actorObject[cubeActor] = SecretRoom::blueCup;
+        putActorAt(cubeActor,160,98,SecretRoom);
+        setActorElevation( 55 );
+        setActorWidth(0);
+
+        pickupObject( InventoryItems::scanner, InventoryItems );
+        //pickupObject( InventoryItems::card, InventoryItems );
+        //pickupObject( InventoryItems::gun, InventoryItems );
+        //pickupObject( InventoryItems::bullets, InventoryItems );
+        invOffset = 0;
+        
+        setCurrentActor(VAR_EGO);
+
+    }
+
+    // This script is called on pre-entry to load the actor
+    // objects from this room
+    script loadObjects() {
+        loadFlObject(commanderZifObj,Actors);
+        loadFlObject(ensignZobObj,Actors);
+    }
+    
+    script zobTalkToZif() {
+            char* sentence;
+
+            cutscene(1) {
+                actorFace( commanderZif, VAR_EGO );
+                actorSay(commanderZif,"Yes, ensign?");
+                waitForMessage();
+            }
+            dialogLoop: while(1) {
+                sentence[0] = "What are your orders?";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                if( hasPressedPlate && ! hasTalkedAboutPlate )
+                    sentence[0] = "I require your assistance with this opening mechanism.";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                sentence[0] = "I'll continue my search.";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+
+                Dialog::dialogStart(ZOB_DIM_COLOR,ZOB_COLOR);
+                do breakScript() while(selectedSentence < 0);
+                Dialog::dialogHide();
+                cutscene() {
+                    sentence = dialogList[selectedSentence];
+                    egoSay("%s{sentence}");
+                    waitForMessage();
+                    switch(selectedSentence) {
+                    case 0:
+                        try {
+                        actorSay(commanderZif,"Locate the stolen artifact.");
+                        waitForMessage();
+                        egoSay("Any ideas where?");
+                        waitForMessage();
+                        actorSay(commanderZif,"Study your surroundings.");
+                        waitForMessage();
+                        actorSay(commanderZif,"Use all the cunning and guile at your disposal.");
+                        waitForMessage();
+                        actorSay(commanderZif,"Should you do this, you shall surely be successful.");
+                        waitForMessage();
+                        egoSay("Guile, right, aye sir.");
+                        waitForMessage();
+                        actorSay(commanderZif,"Also get a gun with which to shoot things.");
+                        waitForMessage();
+                        }
+                        override {
+                            if(VAR_OVERRIDE) {
+                                actorSay(0xFF, ""); //stopTalking();
+                            }
+                        }
+                        break;
+                    case 2:
+                        actorSay(commanderZif,"Very good.");
+                        break;
+                    case 1:
+                        actorSay(commanderZif,"Have you deciphered its secrets?");
+                        waitForMessage();
+                        egoSay("Yes, I believe two persons are required.");
+                        waitForMessage();
+                        actorSay(commanderZif,"In which case I shall follow you, ensign.");
+                        hasTalkedAboutPlate = 1;
+                        break;
+                    }
+                    waitForMessage();
+                }
+                Dialog::dialogClear(1);
+                if(selectedSentence == 2) break dialogLoop;
+            }
+            Dialog::dialogEnd();
+
+    }
+    
+    
+    script zobTalkToZifInSecretRoom() {
+            char* sentence;
+
+            cutscene(1) {
+                actorFace( commanderZif, VAR_EGO );
+                actorSay(commanderZif,"Yes, ensign?");
+                waitForMessage();
+            } 
+            dialogLoop: while(1) {
+                sentence[0] = "What now, Sir?";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                sentence[0] = "I'll continue my search.";
+                Dialog::dialogAdd(sentence);
+
+                Dialog::dialogStart(ZOB_DIM_COLOR,ZOB_COLOR);
+                do breakScript() while(selectedSentence < 0);
+                Dialog::dialogHide();
+                cutscene() {
+                    sentence = dialogList[selectedSentence];
+                    egoSay("%s{sentence}");
+                    waitForMessage();
+                    switch(selectedSentence) {
+                    case 0:
+                        try {
+                        actorSay(commanderZif,"Get artifact.");
+                        waitForMessage();
+                        actorSay(commanderZif,"We need to leave orbit quickly.");
+                        waitForMessage();
+                        egoSay("i see what I can do.");
+                        waitForMessage();
+                        }
+                        override {
+                            if(VAR_OVERRIDE) {
+                                stopTalking();
+                            }
+                        }
+                        break;
+                    case 1:
+                        actorSay(commanderZif,"Very good.");
+                        break;
+                    }
+                    waitForMessage();
+                }
+                Dialog::dialogClear(1);
+                if(selectedSentence == 1) break dialogLoop;
+            }
+            Dialog::dialogEnd();
+
+    }
+
+    object commanderZifObj {
+        name = "Commander Zif";
+        verb(int vrb,int objA,int objB) {
+            char* sentence;
+            int asked;
+        case TalkTo:
+            if(cubeDisappeared)
+                zobTalkToZifInSecretRoom();
+            else
+                zobTalkToZif(hasPressedPlate, hasTalkedAboutPlate);
+            return;
+        case LookAt:
+            egoSay("My commanding officer, Commander Zif.");
+            return;
+        case Give:
+            if(objB == InventoryItems::gun) {
+                if( ! hasShotAtNode ) {
+                    egoSay("And lose my advantage?");
+                    return;
+                }
+                SecretRoom::outro();
+            }
+            else
+                egoSay("I might need this.");
+            return;
+        }
+
+    }
+
+    object ensignZobObj {
+        name = "Ensign Zob";
+    }
+    
+
+}

@@ -1,0 +1,246 @@
+/* ScummC
+ * Copyright (C) 2006  Alban Bedel
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+//palette([48-79]);
+//palette([0-31]);
+palette([224-255]);
+flags = FLIP;
+
+
+picture walking_e00 = {
+    glob = "../graphics/zob/frames/walk_E_??.bmp",
+    position = { -13, -42 }
+};
+
+picture walking_w00 = {
+    glob = "../graphics/zob/frames/walk_E_??.bmp",
+    position = { -13, -42 }
+};
+
+picture walking_n00 = {
+    glob = "../graphics/zob/frames/walk_N_??.bmp",
+    position = { -13, -42 }
+};
+
+picture walking_s00 = {
+    glob = "../graphics/zob/frames/walk_S_??.bmp",
+    position = { -13, -42 }
+};
+
+
+picture standE = {
+    path = "../graphics/zob/frames/stand_SE.bmp",
+    position = { -13, -42 }
+};
+
+picture standW = {
+    path = "../graphics/zob/frames/stand_SE.bmp",
+    position = { -13, -42 }
+};
+
+picture standN = {
+    path = "../graphics/zob/frames/stand_N.bmp",
+    position = { -13, -42 }
+};
+
+picture standS = {
+    path = "../graphics/zob/frames/stand_S.bmp",
+    position = { -13, -42 }
+};
+
+
+picture talking_e00 = {
+    glob = "../graphics/zob/frames/talk_SE_??.bmp",
+    position = { -13, -42 }
+};
+
+picture talking_w00 = {
+    glob = "../graphics/zob/frames/talk_SE_??.bmp",
+    position = { -13, -42 }
+};
+
+picture talking_N = {
+    path = "../graphics/zob/frames/talk_N_02.bmp",
+    position = { -13, -42 }
+};
+
+picture talking_s00 = {
+    glob = "../graphics/zob/frames/talk_S_??.bmp",
+    position = { -13, -42 }
+};
+
+picture raisearmE = {
+    glob = "../graphics/zob/frames/raisearm_SE_??.bmp",
+    position = { -13, -42 }
+};
+
+picture raisearmN = {
+    glob = "../graphics/zob/frames/raisearm_N_??.bmp",
+    position = { -13, -42 }
+};
+
+picture scanS = {
+    glob = "../graphics/zob/frames/scan_S_??.bmp",
+    position = { -13, -42 }
+};
+
+picture aimE = {
+    glob = "../graphics/zob/frames/aim_E_??.bmp",
+    position = { -13, -42 }
+};
+
+picture fireupE = {
+    path = "../graphics/zob/frames/fireup_E.bmp",
+    position = { -13, -50 }
+};
+
+picture beam = {
+    glob = "../graphics/zob/frames/beam_??.bmp",
+    position = { -13, -42 }
+};
+
+picture die = {
+    glob = "../graphics/zob/frames/die_SE_??.bmp",
+    position = { -13, -42 }
+};
+
+
+
+//limb body = {
+//    standS
+//};
+
+limb body = {
+    walking_e0000, walking_e0001, walking_e0002, walking_e0003, // 0-3
+    //walking_e0004, walking_e0005, walking_e0006, walking_e0007,
+
+    walking_w0000, walking_w0001, walking_w0002, walking_w0003, // 4-7
+    //walking_w0004, walking_w0005, walking_w0006, walking_w0007,
+
+    walking_s0000, walking_s0001, walking_s0002, walking_s0003, // 8-11
+    //walking_s0004, walking_s0005, walking_s0006, walking_s0007,
+
+    walking_n0000, walking_n0001, walking_n0002, walking_n0003, // 12-15
+    //walking_n0004, walking_n0005, walking_n0006, walking_n0007,
+
+    standE, // 16
+    standW, // 17
+    standN, // 18
+    standS, // 19
+
+    talking_e0000, talking_e0001, talking_e0002, // 20-22
+
+    talking_w0000, talking_w0001, talking_w0002, // 23-25
+
+    talking_s0000, talking_s0001, talking_s0002, // 26-28
+
+    standN, talking_N, standN, // 29-31
+    
+    raisearmE00, raisearmE01, raisearmE00, standE, // 32-35
+    raisearmN00, raisearmN01, raisearmN00, standN, // 36-39
+
+    scanS00, scanS01, scanS00, // 40-42
+
+    aimE00, aimE01, aimE02, fireupE, aimE02, aimE01, aimE00, // 43-49
+
+    beam00, beam01, beam02, beam03, beam04, beam05, beam06, beam07, beam08, beam09, beam10, standS, // 50-61
+
+    die00, die01, die02, die03, die04, die05, die06, die07 // 62-69
+
+};
+
+anim walk = {
+    E = { body([0-3]) };
+    W = { body([4-7]) };
+    S = { body([8-11]) };
+    N = { body([12-15]) };
+};
+
+anim stand = {
+    E = { body(16) };
+    W = { body(17) };
+    N = { body(18) };
+    S = { body(19) };
+};
+
+anim init = {
+    E = { body(16) };
+    W = { body(17) };
+    N = { body(18) };
+    S = { body(19) };
+};
+
+anim talkStart = {
+    E = { body([20-22]) };
+    W = { body([23-25]) };
+    S = { body([26-28]) };
+    N = { body([29-31]) };
+};
+
+anim talkStop = {
+    E = { body(16) !LOOP };
+    W = { body(17) !LOOP };
+    N = { body(18) !LOOP };
+    S = { body(19) !LOOP };
+};
+
+anim raiseArm @ 24 = {
+    E = { body([32-33]) !LOOP };
+    W = { body([32-33]) !LOOP };
+    N = { body([36-37]) !LOOP };
+    S = { body([29-31]) !LOOP };
+};
+
+anim lowerArm @ 28 = {
+    E = { body([33-35]) !LOOP };
+    W = { body([33-35]) !LOOP };
+    N = { body([37-39]) !LOOP };
+    S = { body([29-31]) !LOOP };
+};
+
+anim scan @ 32 = {
+    E = { body([40-42]) !LOOP };
+    W = { body([40-42]) !LOOP };
+    N = { body([40-42]) !LOOP };
+    S = { body([40-42]) !LOOP };
+};
+
+anim fireup @ 40 = {
+    E = { body([43-49]) !LOOP };
+    W = { body([43-49]) !LOOP };
+    N = { body([43-49]) !LOOP };
+    S = { body([43-49]) !LOOP };
+};
+
+anim beam @ 44 = {
+    E = { body([50-61]) !LOOP };
+    W = { body([50-61]) !LOOP };
+    S = { body([50-61]) !LOOP };
+    N = { body([50-61]) !LOOP };
+};
+
+anim die @ 48 = {
+    E = { body([62-69]) !LOOP };
+    W = { body([62-69]) !LOOP };
+    S = { body([62-69]) !LOOP };
+    N = { body([62-69]) !LOOP };
+};
+
+
+

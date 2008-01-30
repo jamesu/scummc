@@ -1,0 +1,70 @@
+/* ScummC
+ * Copyright (C) 2006  Alban Bedel
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+palette([224-255]);
+
+
+
+picture walk_ = {
+    glob = "../graphics/carol/walkfrombehindwall_??.bmp",
+    position = { -40, -56 }
+};
+
+picture clean_ = {
+    glob = "../graphics/carol/clean_??.bmp",
+    position = { -40, -56 }
+};
+
+
+
+limb body = {
+    walk_00, walk_01, walk_02, walk_03, walk_04, walk_05, // 0-5
+    clean_00, clean_01, clean_02, clean_01 // 6-9
+
+};
+
+
+
+anim stand = {
+    S = { body([6-9]) LOOP };
+};
+
+anim init = {
+    S = { body([0-6]) !LOOP };
+};
+
+anim talkStart = {
+    S = { body(7) };
+};
+
+anim talkStop = {
+    S = { body([6-9]) LOOP };
+};
+
+
+
+anim walkIntoRoom = {
+    S = { body([0-5]) !LOOP };
+};
+
+anim clean @ 8 = {
+    S = { body([6-8]) LOOP };
+};
+
+

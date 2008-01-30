@@ -1,0 +1,537 @@
+/* ScummC
+ * Copyright (C) 2006  Alban Bedel
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+#include <scummVars6.s>
+#include "common.sch"
+#include "officeroom.sch"
+#include "secretroom.sch"
+#include "inventoryitems.sch"
+#include "dialog.sch"
+#include "verbs.sch"
+#include "actors.sch"
+
+
+
+// for the bullets behind the plant
+bit hasSeenBullets, hasTriedToMovePlant, hasTalkedAboutPlant;
+
+bit knowsCarol, askedPassageway;
+
+bit initedGame;
+
+room OfficeRoom {
+
+    image = "graphics/rooms/back01_merged.bmp";
+
+    zplane = {
+        "graphics/rooms/back01_mask1.bmp",
+        "graphics/rooms/back01_mask2.bmp",
+        "graphics/rooms/back01_mask2.bmp"
+    };
+
+    boxd = "graphics/rooms/back01.box";
+    trans = 0;
+
+    object bullets;
+    object plant;
+    
+
+    local script entry() {
+        int firstInit, quickInit;
+
+        firstInit = !initedGame;
+        quickInit = firstInit && didOfficeIntro;
+
+        unless(initedGame) {
+            initedGame = 1;
+            Verbs::setupVerbs();
+            Actors::setupActors();
+        } else {
+            putActorAt(VAR_EGO,296,110,OfficeRoom);
+            walkActorTo(VAR_EGO,250,110);
+            return;
+        }
+
+        unless(didOfficeIntro) cutscene(2) {
+            didOfficeIntro = 1;
+            try {
+                delay(150);
+                putActorAt(ensignZob,170,110,OfficeRoom);
+                putActorAt(commanderZif,200,120,OfficeRoom);
+                animateActor( commanderZif, 44 );
+                animateActor( ensignZob, 44 );
+                delay(150);
+                setCurrentActor(ensignZob);
+                setActorStanding();
+                actorSay(commanderZif, "Hmmm");
+                waitForMessage();
+                Actors::setZifOnThePhone();
+                animateActor( commanderZif, 40 );
+                delay(30);
+                actorSay(commanderZif, "Commander's log, star date 432.1");
+                waitForMessage();
+                actorSay(commanderZif, "Arrival complete on the planet of mostly water.");
+                waitForMessage();
+
+                setCurrentActor(carol);
+                putActorAt(carol,76,98,OfficeRoom);
+                delay(120);
+                setActorStanding();
+                actorSay(carol, "Are you done in here?");
+                waitForMessage();
+                
+                actorFace(commanderZif, carol);
+                actorFace(ensignZob, carol);
+                delay(50);
+                actorSay(commanderZif, "An indigenous lifeform...");
+                waitForMessage();
+                walkActorTo(ensignZob, 105, 105);
+                waitForActor( ensignZob );
+                actorSay(commanderZif, "Ensign Zob and I shall proceed to locate the artifact.");
+                waitForMessage();
+                actorSay(commanderZif, "We shall eliminate any resistance we encounter.");
+                waitForMessage();
+                walkActorTo(commanderZif, 160, 120);
+                waitForActor( commanderZif );
+                actorSay(commanderZif, "This appears to be a crude society.");
+                waitForMessage();
+                actorSay(commanderZif, "The defenses of the compound were negligible.");
+                waitForMessage();
+                actorSay(commanderZif, "I expect the relic to be in our possession shortly.");
+                waitForMessage();
+                Actors::setZifOffThePhone();
+                actorSay(ensignZob, "What of this lifeform, Sir?");
+                waitForMessage();
+                actorSay(commanderZif, "Proceed with caution.");
+                waitForMessage();
+                actorSay(commanderZif, "That may be some kind of weapon.");
+                waitForMessage();
+                walkActorTo(ensignZob, 115, 120);
+                waitForActor( ensignZob );
+                actorSay(ensignZob, "I'll begin my search.");
+                waitForMessage();
+                actorSay(commanderZif, "Keep me updated, ensign.");
+                waitForMessage();
+
+            }
+            override {
+                if(VAR_OVERRIDE) {
+                    actorSay(0xFF, ""); //stopTalking();
+                    putActorAt(carol,76,98,OfficeRoom);
+                    putActorAt(commanderZif,160,120,OfficeRoom);
+                    putActorAt(ensignZob,115,120,OfficeRoom);
+                    setActorStanding();
+                    animateActor( carol, 3 );
+                    Actors::setZifOffThePhone();
+                }
+            }
+        }
+        if(quickInit) {
+            putActorAt(carol,76,98,OfficeRoom);
+            putActorAt(commanderZif,160,120,OfficeRoom);
+            putActorAt(ensignZob,115,120,OfficeRoom);
+            animateActor( carol, 3 );
+        }
+        if(firstInit)
+            Verbs::showVerbs(1);
+    }
+
+    local script zobTalkToCarol() {
+            char* sentence;
+
+            cutscene(1) {
+                if( ! knowsCarol ) {
+                    egoSay("Speak, lifeform!");
+                    waitForMessage();
+                    egoSay("Is this translation matrix working?");
+                    waitForMessage();
+                    actorSay(carol, "You're that guy from accounts, right?");
+                    waitForMessage();
+                }
+                else {
+                    egoSay("Greetings, Carol.");
+                    waitForMessage();
+                    actorSay(carol, "You again?");
+                    waitForMessage();
+                }
+            }
+            dialogLoop: while(1) {
+                sentence = 0;
+                unless(knowsCarol)
+                    sentence[0] = "What is your designation?";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                unless(askedPassageway)
+                    sentence[0] = "What is located through that passageway?";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                sentence[0] = "Stand aside, I need to pass!";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                sentence[0] = "Look out behind you, a three-headed monkey!";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                if( hasTriedToMovePlant && ! hasTalkedAboutPlant )
+                    sentence[0] = "May I move this plant?";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+                sentence[0] = "As you were";
+                Dialog::dialogAdd(sentence);
+                sentence = 0;
+
+                Dialog::dialogStart(ZOB_DIM_COLOR,ZOB_COLOR);
+                do breakScript() while(selectedSentence < 0);
+                Dialog::dialogHide();
+                cutscene() {
+                    sentence = dialogList[selectedSentence];
+                    egoSay("%s{sentence}");
+                    waitForMessage();
+                    switch(selectedSentence) {
+                    case 0:
+                        actorSay(carol,"What you on about?");
+                        waitForMessage();
+                        egoSay("How are you addressed by a superior officer?");
+                        waitForMessage();
+                        actorSay(carol,"Carol");
+                        waitForMessage();
+                        egoSay("Greetings, Carol.");
+                        waitForMessage();
+                        setObjectName(actorObject[carol],"Carol");
+                        knowsCarol = 1;
+                        setCurrentActor(VAR_EGO);
+                        break;
+                    case 1:
+                        actorSay(carol,"Err, reception, canteen...");
+                        waitForMessage();
+                        egoSay("Any stolen relics within those realms?");
+                        waitForMessage();
+                        actorSay(carol,"Do you mean that new tea maker they installed?");
+                        waitForMessage();
+                        egoSay("No.");
+                        waitForMessage();
+                        actorSay(carol,"Dunno then.");
+                        waitForMessage();
+                        askedPassageway = 1;
+                        break;
+                    case 2:
+                        actorSay(carol,"I just cleaned down there, you'll get the floor dirty.");
+                        waitForMessage();
+                        egoSay("In which case I shall remain here.");
+                        waitForMessage();
+                        break;
+                    case 3:
+                        actorSay(carol,"Yeah, that's Terry.");
+                        waitForMessage();
+                        actorSay(carol,"He works in HR.");
+                        waitForMessage();
+                        break;
+                    case 5:
+                        break;
+                    case 4:
+                        actorSay(carol,"I haven't cleaned down there yet.");
+                        waitForMessage();
+                        egoSay("Then by moving the plant I am providing assistance.");
+                        waitForMessage();
+                        actorSay(carol,"Oh yeah, go on then.");
+                        waitForMessage();
+                        hasTalkedAboutPlant = 1;
+                        break;
+                    }
+                    waitForMessage();
+                }
+                Dialog::dialogClear(1);
+                if(selectedSentence == 5) break dialogLoop;
+            }
+            Dialog::dialogEnd();
+
+    }
+
+
+    object cabinetDrawer {
+        x = 128;
+        y = 72;
+        dir = NORTH;
+        name = "cabinet";
+        class = { Openable };
+        states = { 
+            { 30, 16, "graphics/background_items/drawer_open.bmp", { "", "" } }
+        };
+        state = 0;
+
+        verb(int vrb,int objA, int objB) {
+
+        case PickUp:
+        case LookAt:
+            if(getObjectState(objA)==1 && VAR_EGO!=getObjectOwner(InventoryItems::gun)) {
+                cutscene(0) {
+                    egoSay("I'll look in here I think.");
+                    waitForMessage();
+                    animateActor(VAR_EGO, 24);
+                    delay(20);
+                    animateActor(VAR_EGO, 28);
+                    delay(20);
+                    egoSay("There appears to be a small sidearm in this container.");
+                    pickupObject( InventoryItems::gun, InventoryItems );
+                    waitForMessage();
+                    animateActor(VAR_EGO, 24);
+                    delay(20);
+                    animateActor(VAR_EGO, 28);
+                    delay(20);
+                    egoSay("And a plastic card containing some kind of circuitry.");
+                    pickupObject( InventoryItems::card, InventoryItems );
+                }
+            }
+            else
+                egoSay("Some kind of containing vessel for multiple instances of parchment.");
+        }
+    }
+
+
+    script setTalkedAboutPlant() {
+        hasTalkedAboutPlant = 1;
+    }
+
+    // The bullets must be BEFORE the plant to be displayed above it.
+    object bullets {
+        x = 112;
+        y = 80;
+        dir = EAST;
+        name = "ammunition";
+        class = { Pickable };
+        states = {
+            { -8, 16, "graphics/background_items/bullets.bmp", { "", "" } }
+        };
+        state = 1;
+        trans = 0;
+        // This is object is inexistant as long as the plant object
+        // is not in state 2.
+        parent = plant;
+        parent_state = 2;
+
+        verb(int vrb,int objA, int objB) {
+
+        case PickUp:
+            pickupObject( InventoryItems::bullets, InventoryItems );
+            // Put the plant in state 3 to hide the bullets object
+            setObjectState( plant, 3 );
+            return;
+        case LookAt:
+            egoSay("A small box of projectiles.");
+        }
+    }
+
+    
+    object plant {
+        x = 104;
+        y = 48;
+        dir = EAST;
+        name = "plant";
+        states = { 
+            { 0, 48, "graphics/background_items/plant_unmoved.bmp",
+              { "", "graphics/background_items/plant_mask2.bmp",
+                "graphics/background_items/plant_unmoved_mask3.bmp"} },
+            { 0, 48, "graphics/background_items/plant_moved.bmp",
+              { "", "graphics/background_items/plant_mask2.bmp",
+                "graphics/background_items/plant_moved_mask3.bmp"} },
+            { 0, 48, "graphics/background_items/plant_moved.bmp",
+              { "", "graphics/background_items/plant_mask2.bmp",
+                "graphics/background_items/plant_moved_mask3.bmp" } }
+        };
+        state = 1;
+
+        verb(int vrb,int objA, int objB) {
+
+        case LookAt:
+            if( ! hasSeenBullets ) {
+                hasSeenBullets = 1;
+                egoSay( "There is a small object behind this plant beyond reach." );
+            }
+            else
+                egoSay( "This plant appears to be undergoing photosynthesis." );
+            return;
+        case Push:
+        case Pull:
+            if( ! hasSeenBullets ) {
+                egoSay( "Moving this would accomplish nothing." );
+                return;
+            }
+            if( ! hasTalkedAboutPlant ) {
+                cutscene(0) {
+                    animateActor(VAR_EGO, 24);
+                    delay(20);
+                    actorSay( carol, "Hey, I haven't cleaned there yet." );
+                    hasTriedToMovePlant = 1;
+                    waitForMessage();
+                    animateActor(VAR_EGO, 28);
+                    delay(30);
+                }
+                return;
+            }
+            if( getObjectState( plant ) == 1 ) {
+                cutscene(0) {
+                    animateActor(VAR_EGO, 24);
+                    delay(20);
+                    setObjectState( plant, 2 );
+                    delay(30);
+                    animateActor(VAR_EGO, 28);
+                    delay(30);
+                }
+                egoSay( "There is a small box down here." );
+            }
+            else
+                egoSay("I've already moved the plant.");
+            return;
+        }
+    }
+
+    object carolObj {
+        name = "Indigenous lifeform";
+        verb(int vrb,int objA,int objB) {
+        case TalkTo:
+            zobTalkToCarol();
+            return;
+        case LookAt:
+            if( ! knowsCarol ) {
+                egoSay("A large carbon based mammal, it seems.");
+                waitForMessage();
+            }
+            else {
+                egoSay("It is Carol, one of the local lifeforms.");
+                waitForMessage();
+            }
+            return;
+        }
+
+    }
+
+    script setTalkedAboutPlate() {
+        hasTalkedAboutPlate = 1;
+    }
+
+
+    object plate {
+        x = 248;
+        y = 64;
+        w = 8;
+        h = 16;
+        hs_x = -14;
+        hs_y = 30;
+        name = "plate";
+        dir = EAST;
+
+        verb(int vrb, int objA, int objB) {
+        int i;
+        case LookAt:
+            // this should be "smell"
+            hasSmelledPlate = 1;
+            egoSay("I can smell the residue left by the indigenous lifeforms.");
+            waitForMessage();
+            egoSay("It must be some kind of pressure plate.");
+            return;
+        case Push:
+        case Use:
+            if( getObjectState( exitToSecretRoom ) == 7 ) {
+                egoSay("The door is already open.");
+                return;
+            }
+            if( hasTalkedAboutPlate ) {
+                cutscene(2) {
+                    try {
+                        walkActorTo(commanderZif, 267, 116);
+                        waitForActor( commanderZif );
+                        actorSay(commanderZif, "I'll operate the one over here.");
+                        waitForMessage();
+                        delay( 20 );
+                        animateActor(VAR_EGO, 24);
+                        animateActor(commanderZif, 24);
+                        delay(30);
+                        for(i = 2 ; i < 8 ; i++) {
+                            delay( 10 );
+                            setObjectState( exitToSecretRoom, i );
+                        }
+                        animateActor(VAR_EGO, 28);
+                        animateActor(commanderZif, 28);
+                        delay(30);
+                        actorSay(commanderZif, "Continue your investigation.");
+                        waitForMessage();
+                        walkActorTo(commanderZif, 200, 120);
+                    }
+                    override {
+                        if(VAR_OVERRIDE) {
+                            actorSay(0xFF, ""); //stopTalking();
+                            putActorAt(commanderZif, 200, 120, OfficeRoom);
+                            setObjectState( exitToSecretRoom, 7 );
+                        }
+                    }
+                }
+                return;
+            }
+            if( hasSmelledPlate ) {
+                cutscene(2) {
+                    hasPressedPlate = 1;
+                    animateActor(VAR_EGO, 24);
+                    delay(30);
+                    animateActor(VAR_EGO, 28);
+                    delay(30);
+                }
+                egoSay("Nothing happened.");
+                waitForMessage();
+                egoSay("The two plates appear to be connected.");
+                return;
+            }
+            egoSay("I don't know how to use that device.");
+            return;
+        }
+
+    }
+
+
+    object exitToSecretRoom {
+        x = 248;
+        y = 32;
+        name = "secret room";
+        dir = EAST;
+        states = {
+            { 8, 78, "graphics/door/door_closed.bmp" },
+            { 8, 78, "graphics/door/door_opening_01.bmp" },
+            { 8, 78, "graphics/door/door_opening_02.bmp" },
+            { 8, 78, "graphics/door/door_opening_03.bmp" },
+            { 8, 78, "graphics/door/door_opening_04.bmp" },
+            { 8, 78, "graphics/door/door_opening_05.bmp" },
+            { 8, 78, "graphics/door/door_open.bmp" }
+        };
+        state = 1;
+
+        verb(int vrb, int objA, int objB) {
+        case WalkTo:
+            if( getObjectState( exitToSecretRoom ) == 1 ) {
+                egoSay( "It's closed." );
+                return;
+            }
+            walkActorTo(VAR_EGO,290,110);
+            waitForActor(VAR_EGO);
+            screenEffect(0x0083);
+            startRoom(SecretRoom);
+            return;
+        }
+
+    }
+
+
+}
