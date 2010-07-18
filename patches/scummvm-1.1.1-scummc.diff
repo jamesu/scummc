@@ -1,0 +1,61 @@
+diff -uNr scummvm-1.1.1/engines/scumm/detection_tables.h scummvm-1.1.1-scummc/engines/scumm/detection_tables.h
+--- scummvm-1.1.1/engines/scumm/detection_tables.h	2010-04-04 10:39:40.000000000 +0100
++++ scummvm-1.1.1-scummc/engines/scumm/detection_tables.h	2010-07-18 20:14:44.000000000 +0100
+@@ -64,6 +64,8 @@
+ 	{ "samnmax", "Sam & Max Hit the Road" },
+ 	{ "tentacle", "Day of the Tentacle" },
+ 	{ "zak", "Zak McKracken and the Alien Mindbenders" },
++	{ "scummc6", "ScummC games for v6" },
++	{ "scummc7", "ScummC games for v7" },
+ 
+ #ifdef ENABLE_SCUMM_7_8
+ 	{ "ft", "Full Throttle" },
+@@ -243,6 +245,8 @@
+ 
+ 	{"samnmax",  "", 0, GID_SAMNMAX,  6, 0, MDT_ADLIB | MDT_MIDI, GF_USE_KEY, UNK, GUIO_NONE},
+ 	{"samnmax",  "Floppy", 0, GID_SAMNMAX,  6, 0, MDT_ADLIB | MDT_MIDI, GF_USE_KEY, UNK, GUIO_NOSPEECH},
++	
++	{"scummc6",  0, 0, GID_SCUMMC6,  6, 0, MDT_ADLIB | MDT_MIDI, 0, UNK},
+ 
+ #ifdef ENABLE_SCUMM_7_8
+ 	{"ft",       0, 0, GID_FT,  7, 0, MDT_NONE, 0, UNK, GUIO_NOMIDI},
+@@ -250,6 +254,8 @@
+ 	{"dig",      0, 0, GID_DIG, 7, 0, MDT_NONE, 0, UNK, GUIO_NOMIDI},
+ 
+ 	{"comi",     0, 0, GID_CMI, 8, 0, MDT_NONE, 0, Common::kPlatformWindows, GUIO_NOMIDI},
++	
++	{"scummc7",  0, 0, GID_SCUMMC7,  7, 0, MDT_NONE, 0, UNK},
+ #endif
+ 
+ 	// Humongous Entertainment Scumm Version 6
+@@ -467,6 +473,9 @@
+ 	{ "samnmax", "snmdemo.sm%d", kGenDiskNum, UNK_LANG, UNK, 0 },
+ 	{ "samnmax", "snmidemo.%03d", kGenDiskNum, UNK_LANG, UNK, 0 },
+ 	{ "samnmax", "sdemo.sm%d", kGenDiskNum, Common::DE_DEU, UNK, 0 },
++	
++	{ "scummc6", "scummc.%03d", kGenDiskNum, UNK_LANG, UNK, 0 },
++	{ "scummc6", "scummc6.%03d", kGenDiskNum, UNK_LANG, UNK, 0 },
+ 
+ #ifdef ENABLE_SCUMM_7_8
+ 	{ "dig", "dig.la%d", kGenDiskNum, UNK_LANG, UNK, 0 },
+@@ -480,6 +489,8 @@
+ 	{ "ft", "Full Throttle Demo Data", kGenUnchanged, UNK_LANG, Common::kPlatformMacintosh, "Demo" },
+ 	{ "ft", "Vollgas Data", kGenUnchanged, Common::DE_DEU, Common::kPlatformMacintosh, 0 },
+ 	{ "ft", "Vollgas Demo Data", kGenUnchanged, Common::DE_DEU, Common::kPlatformMacintosh, "Demo" },
++	
++	{ "scummc7", "scummc7.%03d", kGenDiskNum, UNK_LANG, UNK, 0 },
+ 
+ 	{ "comi", "comi.la%d", kGenDiskNum, UNK_LANG, UNK, 0 },
+ #endif
+diff -uNr scummvm-1.1.1/engines/scumm/scumm.h scummvm-1.1.1-scummc/engines/scumm/scumm.h
+--- scummvm-1.1.1/engines/scumm/scumm.h	2010-01-25 01:39:44.000000000 +0000
++++ scummvm-1.1.1-scummc/engines/scumm/scumm.h	2010-07-18 20:11:38.000000000 +0100
+@@ -222,6 +222,8 @@
+ 	GID_SAMNMAX,
+ 	GID_TENTACLE,
+ 	GID_ZAK,
++	GID_SCUMMC6,
++	GID_SCUMMC7,
+ 
+ 	GID_HEGAME,      // Generic name for all HE games with default behaviour
+ 	GID_PUTTDEMO,
