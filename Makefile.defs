@@ -196,6 +196,7 @@ scvm_SRCS=                      \
 
 scvm_LIBS=                      \
 	SDL                     \
+	m                       \
 
 scvm_OPT_LIBS=                  \
 	READLINE                \

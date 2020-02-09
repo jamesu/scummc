@@ -56,7 +56,7 @@
 
 #define YYERROR_VERBOSE 1
 
-typedef struct scc_parser {
+struct scc_parser {
   // targeted vm version
   scc_target_t* target;;
   scc_lex_t* lex;
@@ -73,16 +73,14 @@ typedef struct scc_parser {
   char do_deps;
   int num_deps;
   char** deps;
-} scc_parser_t;
+};
 
-#define YYPARSE_PARAM v_sccp
-#define sccp ((scc_parser_t*)v_sccp)
-#define YYLEX_PARAM sccp->lex
+#define LEX_PARAM sccp->lex
 
 // redefined the function names
 #define yyparse scc_parser_parse_internal
 #define yylex scc_lex_lex
-#define yyerror(msg) scc_parser_error(sccp,&yyloc,msg)
+#define yyerror(loc,val,msg) scc_parser_error(val,loc,msg)
 
 int scc_parser_error (scc_parser_t* p,YYLTYPE *llocp, const char *s);
 void scc_parser_add_dep(scc_parser_t* p, char* dep);
@@ -188,7 +186,9 @@ static void scc_parser_find_res(scc_parser_t* p, char** file_ptr);
 
 %}
 
-%pure_parser
+%pure-parser
+%parse-param {struct scc_parser* sccp}
+%lex-param {scc_lex_t* LEX_PARAM}
 
 %union {
   int integer;

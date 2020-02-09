@@ -42,7 +42,7 @@
 
 #include "quantize.h"
 
-inline int scc_img_rgb(int r, int g, int b) {
+static inline int scc_img_rgb(int r, int g, int b) {
   return (r) | (g << 8) | (b << 16);
 }
 
