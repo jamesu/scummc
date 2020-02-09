@@ -1,0 +1,7 @@
+# Build-related:
+/config.*.mak
+/build.*
+
+# Backup files:
+*.bak
+*~
