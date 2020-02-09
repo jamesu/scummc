@@ -60,6 +60,8 @@
 #define SCC_VAR_ARRAY   0x100
 //@}
 
+typedef struct scc_parser scc_parser_t;
+
 typedef struct scc_code_st scc_code_t;
 typedef struct scc_func_st scc_func_t;
 typedef struct scc_arg_st scc_arg_t;
